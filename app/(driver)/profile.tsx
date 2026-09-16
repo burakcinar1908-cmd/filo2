@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
 import { useAuthStore } from "../../src/store/authStore";
 
 export default function DriverProfileScreen() {
   const { user, logout } = useAuthStore();
+  const router = useRouter();
 
   const handleLogout = () => {
     Alert.alert("Çıkış Yap", "Oturumu kapatmak istediğinize emin misiniz?", [
@@ -42,6 +44,12 @@ export default function DriverProfileScreen() {
           </View>
         ))}
       </View>
+
+      <TouchableOpacity style={styles.warningsLink} onPress={() => router.push("/(driver)/warnings")}>
+        <Ionicons name="warning-outline" size={18} color={colors.warning} />
+        <Text style={styles.warningsLinkText}>Uyarılarım</Text>
+        <Ionicons name="chevron-forward" size={16} color={colors.textDim} />
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={20} color={colors.danger} />
@@ -92,4 +100,16 @@ const styles = StyleSheet.create({
     borderColor: colors.danger,
   },
   logoutText: { color: colors.danger, fontSize: 15, fontWeight: "600" },
+  warningsLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing(1),
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing(1.75),
+    marginTop: spacing(2),
+  },
+  warningsLinkText: { color: colors.text, fontSize: 14, fontWeight: "600", flex: 1 },
 });

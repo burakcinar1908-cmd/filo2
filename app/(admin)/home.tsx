@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
 import { useAuthStore } from "../../src/store/authStore";
@@ -15,6 +15,7 @@ interface FleetVehicle {
 
 export default function AdminHomeScreen() {
   const { user, role } = useAuthStore();
+  const router = useRouter();
   const isSuperAdmin = role === "superadmin";
 
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
@@ -67,10 +68,26 @@ export default function AdminHomeScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
         <View style={styles.header}>
-          <Text style={styles.greeting}>{isSuperAdmin ? "Süper Admin" : "Merhaba"}</Text>
-          <Text style={styles.sub}>
-            {isSuperAdmin ? "Platform Genel Bakış" : String(user?.company_name ?? user?.email ?? "")}
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.greeting}>{isSuperAdmin ? "Süper Admin" : "Merhaba"}</Text>
+            <Text style={styles.sub}>
+              {isSuperAdmin ? "Platform Genel Bakış" : String(user?.company_name ?? user?.email ?? "")}
+            </Text>
+          </View>
+          <View style={styles.headerActionsRow}>
+            <TouchableOpacity
+              style={styles.announcementButton}
+              onPress={() => router.push("/(admin)/notifications")}
+            >
+              <Ionicons name="notifications" size={20} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.announcementButton}
+              onPress={() => router.push("/(admin)/announcements")}
+            >
+              <Ionicons name="megaphone" size={20} color={colors.onPrimary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {isSuperAdmin ? (
@@ -159,7 +176,16 @@ function StatCard({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   scroll: { padding: spacing(2.5) },
-  header: { marginBottom: spacing(2.5) },
+  header: { flexDirection: "row", alignItems: "flex-start", marginBottom: spacing(2.5) },
+  headerActionsRow: { flexDirection: "row", gap: spacing(1) },
+  announcementButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   greeting: { color: colors.text, fontSize: 20, fontWeight: "700" },
   sub: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
   licenseCard: {
