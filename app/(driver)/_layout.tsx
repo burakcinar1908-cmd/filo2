@@ -20,12 +20,21 @@ export default function DriverTabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="announcements"
+        options={{
+          title: "Duyurular",
+          tabBarIcon: ({ color, size }) => <Ionicons name="megaphone" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profil",
           tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
         }}
       />
+      <Tabs.Screen name="notifications" options={{ href: null }} />
+      <Tabs.Screen name="warnings" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -1,16 +1,22 @@
+// Apex Fleet Ops — Tactical Dark Glassmorphism theme
 export const colors = {
-  bg: "#0B1220",
-  surface: "#131B2C",
-  surfaceAlt: "#1B2537",
-  border: "#243049",
-  primary: "#2E7DF7",
-  primaryDark: "#1C5FCC",
-  success: "#22C55E",
-  warning: "#F59E0B",
+  bg: "#0B0D11",
+  surface: "#12161E",
+  surfaceAlt: "#181E29",
+  surfaceRaised: "#222A38",
+  border: "#2B3545",
+  borderSubtle: "#1F2633",
+  primary: "#F5B82E",
+  primaryDark: "#D49B15",
+  onPrimary: "#412D00",
+  success: "#10B981",
+  warning: "#F5B82E",
   danger: "#EF4444",
-  text: "#F2F5FA",
-  textMuted: "#8B97AC",
-  textDim: "#5B6579",
+  cyan: "#06B6D4",
+  text: "#E2E2E8",
+  textMuted: "#D4C4AD",
+  textDim: "#9C8F7A",
 };
 
 export const spacing = (n: number) => n * 8;
+

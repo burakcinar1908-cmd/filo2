@@ -47,6 +47,9 @@ export default function AdminTabsLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
         }}
       />
+      <Tabs.Screen name="announcements" options={{ href: null }} />
+      <Tabs.Screen name="notifications" options={{ href: null }} />
+      <Tabs.Screen name="driver-detail" options={{ href: null }} />
     </Tabs>
   );
 }

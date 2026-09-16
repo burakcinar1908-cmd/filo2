@@ -12,13 +12,14 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
 import { useAuthStore } from "../../src/store/authStore";
 import { getPersonnel, createPersonnel, Personnel } from "../../src/api/fleet";
 
 export default function PersonnelScreen() {
+  const router = useRouter();
   const role = useAuthStore((s) => s.role);
   const isAdmin = role === "admin";
 
@@ -104,7 +105,12 @@ export default function PersonnelScreen() {
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() =>
+              router.push({ pathname: "/(admin)/driver-detail", params: { id: item.id, name: item.name } })
+            }
+          >
             <View style={styles.cardHeader}>
               <Text style={styles.name}>{item.name}</Text>
               <View style={[styles.badge, { backgroundColor: item.is_active ? colors.success : colors.textDim }]}>
@@ -113,7 +119,7 @@ export default function PersonnelScreen() {
             </View>
             <Text style={styles.meta}>{item.email}</Text>
             <Text style={styles.metaDim}>{item.phone}</Text>
-          </View>
+          </TouchableOpacity>
         )}
         ListEmptyComponent={<Text style={styles.empty}>Kayıtlı sürücü bulunmuyor.</Text>}
       />
