@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, TextInput, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
 import { useAuthStore } from "../../src/store/authStore";
 import { useShiftStore } from "../../src/store/shiftStore";
@@ -16,6 +17,7 @@ interface Vehicle {
 
 export default function DriverHomeScreen() {
   const { user, logout } = useAuthStore();
+  const router = useRouter();
   const { shift, shiftStatus, gpsStatus, loadActiveShift, startShift, endShift, syncOfflineQueue } =
     useShiftStore();
 
@@ -115,9 +117,14 @@ export default function DriverHomeScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <Text style={styles.greeting}>Merhaba, {String(user?.name ?? "Sürücü")}</Text>
-          <TouchableOpacity onPress={logout}>
-            <Text style={styles.logout}>Çıkış</Text>
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity onPress={() => router.push("/(driver)/notifications")} style={styles.bellButton}>
+              <Ionicons name="notifications-outline" size={20} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={logout}>
+              <Text style={styles.logout}>Çıkış</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.statusCard}>
@@ -241,6 +248,15 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: spacing(3) },
   greeting: { color: colors.text, fontSize: 20, fontWeight: "700" },
   logout: { color: colors.textMuted, fontSize: 14 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: spacing(1.5) },
+  bellButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: colors.surfaceRaised,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   statusCard: {
     backgroundColor: colors.surface,
     borderRadius: 16,
