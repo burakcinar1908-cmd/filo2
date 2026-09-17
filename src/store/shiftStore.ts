@@ -1,7 +1,9 @@
 import { create } from "zustand";
+import { Platform } from "react-native";
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import { api } from "../api/client";
+import { useAuthStore } from "./authStore";
 import {
   LOCATION_TASK_NAME,
   getQueuedPoints,
@@ -67,8 +69,12 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
 
   startShift: async (vehicleId: string, startKm: number) => {
     const startTime = new Date().toISOString();
+    // Backend ShiftCreate.personnel_id zorunlu tutuyor; personel kendi id'sini gönderir.
+    const personnelId = useAuthStore.getState().user?.id as string | undefined;
+    if (!personnelId) throw new Error("Oturum bulunamadı");
     const { data } = await api.post("/shifts", {
       vehicle_id: vehicleId,
+      personnel_id: personnelId,
       start_km: startKm,
       start_time: startTime,
     });
@@ -78,6 +84,10 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
       shiftStatus: "active",
     });
 
+    if (isWeb) {
+      // Web önizlemesi: native konum izin akışı yoktur, GPS takibi yalnızca native'de çalışır.
+      return;
+    }
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
       set({ gpsStatus: "permission_required" });
@@ -140,7 +150,11 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
   },
 }));
 
+// Web önizlemesinde native TaskManager API'leri yoktur; sadece native platformlarda GPS takibi başlatılır.
+const isWeb = Platform.OS === "web";
+
 async function beginGpsTracking() {
+  if (isWeb) return;
   await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
     accuracy: Location.Accuracy.Balanced,
     timeInterval: 20000, // 20 sn — batarya/veri dengesi
@@ -155,6 +169,7 @@ async function beginGpsTracking() {
 }
 
 async function stopGpsTracking() {
+  if (isWeb) return;
   const isRunning = await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME);
   if (isRunning) {
     await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
