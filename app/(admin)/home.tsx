@@ -5,7 +5,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
 import { useAuthStore } from "../../src/store/authStore";
-import { getAdminDashboard, AdminDashboard } from "../../src/api/fleet";
+import { getAdminDashboard, getWeeklySummary, AdminDashboard, WeeklySummary } from "../../src/api/fleet";
 import { api } from "../../src/api/client";
 
 interface FleetVehicle {
@@ -20,6 +20,7 @@ export default function AdminHomeScreen() {
 
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
   const [fleetCount, setFleetCount] = useState<{ total: number; active: number } | null>(null);
+  const [weekly, setWeekly] = useState<WeeklySummary | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
@@ -30,6 +31,7 @@ export default function AdminHomeScreen() {
       } else {
         const data = await getAdminDashboard();
         setDashboard(data);
+        getWeeklySummary().then(setWeekly).catch(() => setWeekly(null));
       }
     } catch {
       // sessiz geç
@@ -60,6 +62,18 @@ export default function AdminHomeScreen() {
       : dashboard?.license_status === "trial"
       ? colors.warning
       : colors.danger;
+  const days = dashboard?.days_remaining ?? null;
+  const daysText =
+    days === null
+      ? null
+      : dashboard?.license_status === "trial"
+      ? days > 0
+        ? `Deneme · ${days} gün kaldı`
+        : "Deneme süresi doldu"
+      : days > 0
+      ? `${days} gün sonra bitiyor`
+      : "Bugün sona eriyor";
+  const licenseUrgent = days !== null && days <= 7;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -91,23 +105,36 @@ export default function AdminHomeScreen() {
         </View>
 
         {isSuperAdmin ? (
-          <View style={styles.statsRow}>
-            <StatCard icon="car-sport" label="Toplam Araç" value={fleetCount?.total ?? "—"} />
-            <StatCard icon="pulse" label="Mesaide" value={fleetCount?.active ?? "—"} accent={colors.success} />
-          </View>
+          <>
+            <TouchableOpacity style={styles.manageButton} onPress={() => router.push("/(admin)/manage")}>
+              <Ionicons name="settings-outline" size={20} color={colors.onPrimary} />
+              <Text style={styles.manageButtonText}>Firma ve Lisans Yönetimi</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.onPrimary} />
+            </TouchableOpacity>
+            <View style={styles.statsRow}>
+              <StatCard icon="car-sport" label="Toplam Araç" value={fleetCount?.total ?? "—"} />
+              <StatCard icon="pulse" label="Mesaide" value={fleetCount?.active ?? "—"} accent={colors.success} />
+            </View>
+          </>
         ) : (
           <>
-            <View style={[styles.licenseCard, { borderColor: licenseColor }]}>
+            <TouchableOpacity
+              style={[styles.licenseCard, { borderColor: licenseUrgent ? colors.danger : licenseColor }]}
+              activeOpacity={0.8}
+              onPress={() => router.push("/(admin)/plans")}
+            >
               <Ionicons name="shield-checkmark-outline" size={20} color={licenseColor} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.licenseLabel, { color: licenseColor }]}>{licenseLabel}</Text>
-                {dashboard?.license_end_date && (
+                {daysText && <Text style={[styles.licenseDate, licenseUrgent && { color: colors.danger }]}>{daysText}</Text>}
+                {!daysText && dashboard?.license_end_date && (
                   <Text style={styles.licenseDate}>
                     Bitiş: {new Date(dashboard.license_end_date).toLocaleDateString("tr-TR")}
                   </Text>
                 )}
               </View>
-            </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textDim} />
+            </TouchableOpacity>
 
             <View style={styles.statsRow}>
               <StatCard
@@ -130,6 +157,28 @@ export default function AdminHomeScreen() {
                 value={`₺${(dashboard?.total_revenue ?? 0).toLocaleString("tr-TR")}`}
               />
             </View>
+
+            {weekly && (weekly.top_profit_driver || weekly.top_shifts_driver) && (
+              <View style={styles.limitCard}>
+                <Text style={styles.limitTitle}>Bu Haftanın Yıldızları</Text>
+                {weekly.top_profit_driver && (
+                  <View style={styles.starRow}>
+                    <Ionicons name="cash-outline" size={16} color={colors.success} />
+                    <Text style={styles.starText} numberOfLines={1}>
+                      En çok kâr: <Text style={styles.starName}>{weekly.top_profit_driver.name}</Text> · ₺{weekly.top_profit_driver.net_profit.toLocaleString("tr-TR")}
+                    </Text>
+                  </View>
+                )}
+                {weekly.top_shifts_driver && (
+                  <View style={styles.starRow}>
+                    <Ionicons name="pulse" size={16} color={colors.primary} />
+                    <Text style={styles.starText} numberOfLines={1}>
+                      En çok mesai: <Text style={styles.starName}>{weekly.top_shifts_driver.name}</Text> · {weekly.top_shifts_driver.shifts} mesai
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
 
             <View style={styles.limitCard}>
               <Text style={styles.limitTitle}>Kullanım Limitleri</Text>
@@ -220,6 +269,19 @@ const styles = StyleSheet.create({
     marginTop: spacing(1),
   },
   limitTitle: { color: colors.text, fontSize: 15, fontWeight: "700", marginBottom: spacing(1.5) },
+  starRow: { flexDirection: "row", alignItems: "center", gap: spacing(1), marginBottom: spacing(1) },
+  starText: { color: colors.textMuted, fontSize: 13, flex: 1 },
+  starName: { color: colors.text, fontWeight: "700" },
+  manageButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing(1.5),
+    backgroundColor: colors.primary,
+    borderRadius: 14,
+    padding: spacing(2),
+    marginBottom: spacing(2),
+  },
+  manageButtonText: { color: colors.onPrimary, fontSize: 15, fontWeight: "700", flex: 1 },
   limitRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: spacing(1) },
   limitLabel: { color: colors.textMuted, fontSize: 14 },
   limitValue: { color: colors.text, fontSize: 14, fontWeight: "600" },

@@ -113,6 +113,12 @@ export default function LoginScreen() {
               )}
             </TouchableOpacity>
 
+            <Link href="/(auth)/forgot-password" asChild>
+              <TouchableOpacity style={styles.forgotLink}>
+                <Text style={styles.forgotLinkText}>Şifremi unuttum</Text>
+              </TouchableOpacity>
+            </Link>
+
             <Link href="/(auth)/register" asChild>
               <TouchableOpacity style={styles.registerLink}>
                 <Text style={styles.registerLinkText}>Hesabınız yok mu? Kayıt olun</Text>
@@ -155,6 +161,8 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: colors.text, fontSize: 16, fontWeight: "600" },
-  registerLink: { alignItems: "center", marginTop: spacing(2.5) },
+  forgotLink: { alignItems: "center", marginTop: spacing(2) },
+  forgotLinkText: { color: colors.textMuted, fontSize: 14 },
+  registerLink: { alignItems: "center", marginTop: spacing(1) },
   registerLinkText: { color: colors.primary, fontSize: 14, fontWeight: "600" },
 });

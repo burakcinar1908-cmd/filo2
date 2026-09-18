@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import * as SecureStore from "expo-secure-store";
 import { TOKEN_KEY } from "../api/client";
-import { login as loginRequest, registerAdmin, Role, RegisterPayload } from "../api/auth";
+import { login as loginRequest, registerAdminWithRecovery, Role, RegisterPayload } from "../api/auth";
 
 interface AuthState {
   isLoading: boolean;
@@ -11,7 +11,7 @@ interface AuthState {
   error: string | null;
   bootstrap: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<string>;
   logout: () => Promise<void>;
 }
 
@@ -56,11 +56,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (payload: RegisterPayload) => {
     set({ error: null });
     try {
-      const result = await registerAdmin(payload);
+      const result = await registerAdminWithRecovery(payload);
       await SecureStore.setItemAsync(TOKEN_KEY, result.token);
       await SecureStore.setItemAsync("tagsimetre_role", result.role);
       await SecureStore.setItemAsync("tagsimetre_user", JSON.stringify(result.user));
       set({ isAuthenticated: true, role: result.role, user: result.user });
+      return result.recovery_code;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Kayıt başarısız";
       set({ error: message });
