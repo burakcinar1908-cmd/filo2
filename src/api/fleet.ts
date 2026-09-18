@@ -47,12 +47,31 @@ export interface AdminDashboard {
   license_status: "active" | "trial" | "expired";
   license_end_date: string | null;
   trial_end_date: string;
+  days_remaining: number | null;
   max_vehicles: number;
   max_personnel: number;
 }
 
+export interface WeeklySummaryDriver {
+  personnel_id: string;
+  name: string;
+  shifts: number;
+  net_profit: number;
+}
+
+export interface WeeklySummary {
+  week_start: string;
+  top_profit_driver: WeeklySummaryDriver | null;
+  top_shifts_driver: WeeklySummaryDriver | null;
+}
+
 export async function getAdminDashboard(): Promise<AdminDashboard> {
   const { data } = await api.get("/admin/dashboard");
+  return data;
+}
+
+export async function getWeeklySummary(): Promise<WeeklySummary> {
+  const { data } = await api.get<WeeklySummary>("/admin/weekly-summary");
   return data;
 }
 

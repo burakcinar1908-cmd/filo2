@@ -50,6 +50,8 @@ export default function AdminTabsLayout() {
       <Tabs.Screen name="announcements" options={{ href: null }} />
       <Tabs.Screen name="notifications" options={{ href: null }} />
       <Tabs.Screen name="driver-detail" options={{ href: null }} />
+      <Tabs.Screen name="plans" options={{ href: null }} />
+      <Tabs.Screen name="manage" options={{ href: null }} />
     </Tabs>
   );
 }

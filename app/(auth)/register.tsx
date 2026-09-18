@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../src/store/authStore";
 import { colors, spacing } from "../../src/theme/colors";
 
@@ -25,6 +26,7 @@ export default function RegisterScreen() {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
   const register = useAuthStore((s) => s.register);
 
   const handleRegister = async () => {
@@ -43,19 +45,46 @@ export default function RegisterScreen() {
     setSubmitting(true);
     setErrorMsg(null);
     try {
-      await register({
+      const code = await register({
         email: email.trim(),
         password,
         company_name: companyName.trim(),
         contact_name: contactName.trim(),
         phone: phone.trim(),
       });
+      setRecoveryCode(code);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Kayıt sırasında bir hata oluştu.");
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (recoveryCode) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          <View style={styles.brand}>
+            <Ionicons name="key" size={48} color={colors.success} />
+            <Text style={styles.brandName}>Kayıt Tamamlandı</Text>
+            <Text style={styles.brandSub}>Hesabınız oluşturuldu</Text>
+          </View>
+          <View style={styles.recoveryCard}>
+            <Text style={styles.recoveryTitle}>Kurtarma Kodunuz</Text>
+            <Text style={styles.recoveryCode}>{recoveryCode}</Text>
+            <Text style={styles.recoveryNote}>
+              Bu kodu güvenli bir yere kaydedin. Şifrenizi unutursanız giriş ekranındaki "Şifremi unuttum" bölümünde bu kodu gireceksiniz. Tekrar gösterilmez!
+            </Text>
+          </View>
+          <Link href="/(admin)/home" asChild>
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>Uygulamaya Git</Text>
+            </TouchableOpacity>
+          </Link>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -182,4 +211,16 @@ const styles = StyleSheet.create({
   buttonText: { color: colors.text, fontSize: 16, fontWeight: "600" },
   registerLink: { alignItems: "center", marginTop: spacing(2.5) },
   registerLinkText: { color: colors.primary, fontSize: 14, fontWeight: "600" },
+  recoveryCard: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.success,
+    borderRadius: 16,
+    padding: spacing(3),
+    alignItems: "center",
+    marginBottom: spacing(3),
+  },
+  recoveryTitle: { color: colors.textMuted, fontSize: 13, marginBottom: spacing(1) },
+  recoveryCode: { color: colors.text, fontSize: 30, fontWeight: "800", letterSpacing: 4 },
+  recoveryNote: { color: colors.textMuted, fontSize: 13, lineHeight: 19, marginTop: spacing(2), textAlign: "center" },
 });

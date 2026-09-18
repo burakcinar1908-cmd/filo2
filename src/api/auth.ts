@@ -1,5 +1,11 @@
 import { api } from "./client";
 
+/** API hata yanıtındaki Türkçe mesajı yakalar (ör. "Bu e-posta zaten kullanılıyor"). */
+export function apiErrorMessage(err: unknown, fallback: string): string {
+  const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+  return detail || (err instanceof Error ? err.message : fallback);
+}
+
 export type Role = "superadmin" | "admin" | "personnel";
 
 export interface LoginResult {
@@ -38,6 +44,50 @@ export async function registerAdmin(payload: RegisterPayload): Promise<LoginResu
   return { token: data.token, user: data.user, role: "admin" };
 }
 
+export interface RegisterWithRecoveryResult extends LoginResult {
+  recovery_code: string;
+}
+
+/** Kayıt + 9 haneli kurtarma kodu (şifremi unuttum için). */
+export async function registerAdminWithRecovery(payload: RegisterPayload): Promise<RegisterWithRecoveryResult> {
+  const { data } = await api.post("/auth/admin/register-with-recovery", payload);
+  return { token: data.token, user: data.user, role: "admin", recovery_code: data.recovery_code };
+}
+
+/** Admin: e-posta + kurtarma kodu + yeni şifre. */
+export async function adminForgotPassword(email: string, recoveryCode: string, newPassword: string): Promise<{ message: string }> {
+  const { data } = await api.post("/auth/forgot-password-admin", {
+    email,
+    recovery_code: recoveryCode,
+    new_password: newPassword,
+  });
+  return data;
+}
+
+/** Sürücü: talep adminine bildirim olarak gider. */
+export async function driverForgotPassword(email: string): Promise<{ message: string }> {
+  const { data } = await api.post("/auth/forgot-password-driver", { email });
+  return data;
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+  const { data } = await api.post("/auth/change-password", {
+    current_password: currentPassword,
+    new_password: newPassword,
+  });
+  return data;
+}
+
+export async function getRecoveryCode(): Promise<{ recovery_code: string | null }> {
+  const { data } = await api.get("/auth/recovery-code");
+  return data;
+}
+
+export async function resetPersonnelPassword(personnelId: string, newPassword: string): Promise<{ message: string }> {
+  const { data } = await api.put(`/personnel/${personnelId}/reset-password`, { new_password: newPassword });
+  return data;
+}
+
 export async function initSuperAdmin(): Promise<{ message: string }> {
   const { data } = await api.post("/superadmin/init");
   return data;
@@ -57,7 +107,8 @@ export async function login(email: string, password: string): Promise<LoginResul
     try {
       return await attempt(email, password);
     } catch (err) {
-      lastError = err;
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 429) throw err; // hız limiti: diğer rollere denemeyin
     }
   }
   throw lastError instanceof Error ? lastError : new Error("Giriş başarısız");

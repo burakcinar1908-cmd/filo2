@@ -10,6 +10,7 @@ import {
   TextInput,
   Alert,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -17,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
 import { useAuthStore } from "../../src/store/authStore";
 import { getPersonnel, createPersonnel, Personnel } from "../../src/api/fleet";
+import { resetPersonnelPassword } from "../../src/api/auth";
 
 export default function PersonnelScreen() {
   const router = useRouter();
@@ -32,6 +34,9 @@ export default function PersonnelScreen() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [resetTarget, setResetTarget] = useState<Personnel | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetBusy, setResetBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -59,6 +64,25 @@ export default function PersonnelScreen() {
     setEmail("");
     setPhone("");
     setPassword("");
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetTarget) return;
+    if (resetPassword.length < 6) {
+      Alert.alert("Geçersiz şifre", "Şifre en az 6 karakter olmalıdır.");
+      return;
+    }
+    setResetBusy(true);
+    try {
+      await resetPersonnelPassword(resetTarget.id, resetPassword);
+      setResetTarget(null);
+      setResetPassword("");
+      Alert.alert("Tamam", `${resetTarget.name} için yeni şifre belirlendi. Sürücüyle paylaşın.`);
+    } catch (err) {
+      Alert.alert("Hata", err instanceof Error ? err.message : "Şifre sıfırlanamadı.");
+    } finally {
+      setResetBusy(false);
+    }
   };
 
   const handleAdd = async () => {
@@ -119,10 +143,42 @@ export default function PersonnelScreen() {
             </View>
             <Text style={styles.meta}>{item.email}</Text>
             <Text style={styles.metaDim}>{item.phone}</Text>
+            {isAdmin && (
+              <TouchableOpacity
+                style={styles.resetButton}
+                onPress={() => {
+                  setResetTarget(item);
+                  setResetPassword("");
+                }}
+              >
+                <Ionicons name="key-outline" size={14} color={colors.warning} />
+                <Text style={styles.resetButtonText}>Şifre Sıfırla</Text>
+              </TouchableOpacity>
+            )}
           </TouchableOpacity>
         )}
         ListEmptyComponent={<Text style={styles.empty}>Kayıtlı sürücü bulunmuyor.</Text>}
       />
+
+      {/* Şifre sıfırlama modalı */}
+      <Modal visible={!!resetTarget} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Şifre Sıfırla</Text>
+            <Text style={styles.modalSub}>{resetTarget?.name} için yeni şifre belirleyin. Sürücüye bildirim düşer.</Text>
+            <Text style={styles.label}>Yeni Şifre</Text>
+            <TextInput style={styles.input} value={resetPassword} onChangeText={setResetPassword} placeholder="En az 6 karakter" placeholderTextColor={colors.textDim} secureTextEntry />
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setResetTarget(null)}>
+                <Text style={styles.modalCancelText}>Vazgeç</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalConfirm} onPress={handleResetPassword} disabled={resetBusy}>
+                {resetBusy ? <ActivityIndicator color={colors.text} /> : <Text style={styles.modalConfirmText}>Kaydet</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={modalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
@@ -226,6 +282,9 @@ const styles = StyleSheet.create({
   badgeText: { color: colors.text, fontSize: 11, fontWeight: "700" },
   meta: { color: colors.textMuted, fontSize: 14, marginTop: spacing(0.75) },
   metaDim: { color: colors.textDim, fontSize: 12, marginTop: spacing(0.5) },
+  resetButton: { flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start", marginTop: spacing(1), paddingHorizontal: spacing(1.25), paddingVertical: spacing(0.5), borderRadius: 8, borderWidth: 1, borderColor: colors.warning },
+  resetButtonText: { color: colors.warning, fontSize: 12, fontWeight: "600" },
+  modalSub: { color: colors.textMuted, fontSize: 13, marginBottom: spacing(1.5) },
   empty: { color: colors.textDim, textAlign: "center", marginTop: spacing(4) },
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", padding: spacing(3) },
   modalCard: {
