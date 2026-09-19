@@ -4,6 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
+import { StaggerInView } from "../../src/components/ui/StaggerInView";
+import { PressableScale } from "../../src/components/ui/PressableScale";
 import { useAuthStore } from "../../src/store/authStore";
 import { getAdminDashboard, getWeeklySummary, AdminDashboard, WeeklySummary } from "../../src/api/fleet";
 import { api } from "../../src/api/client";
@@ -106,21 +108,25 @@ export default function AdminHomeScreen() {
 
         {isSuperAdmin ? (
           <>
-            <TouchableOpacity style={styles.manageButton} onPress={() => router.push("/(admin)/manage")}>
+            <StaggerInView index={1}>
+            <PressableScale style={styles.manageButton} onPress={() => router.push("/(admin)/manage")}>
               <Ionicons name="settings-outline" size={20} color={colors.onPrimary} />
               <Text style={styles.manageButtonText}>Firma ve Lisans Yönetimi</Text>
               <Ionicons name="chevron-forward" size={18} color={colors.onPrimary} />
-            </TouchableOpacity>
+            </PressableScale>
+            </StaggerInView>
+            <StaggerInView index={2}>
             <View style={styles.statsRow}>
               <StatCard icon="car-sport" label="Toplam Araç" value={fleetCount?.total ?? "—"} />
               <StatCard icon="pulse" label="Mesaide" value={fleetCount?.active ?? "—"} accent={colors.success} />
             </View>
+            </StaggerInView>
           </>
         ) : (
           <>
-            <TouchableOpacity
+            <StaggerInView index={1}>
+            <PressableScale
               style={[styles.licenseCard, { borderColor: licenseUrgent ? colors.danger : licenseColor }]}
-              activeOpacity={0.8}
               onPress={() => router.push("/(admin)/plans")}
             >
               <Ionicons name="shield-checkmark-outline" size={20} color={licenseColor} />
@@ -134,8 +140,10 @@ export default function AdminHomeScreen() {
                 )}
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textDim} />
-            </TouchableOpacity>
+            </PressableScale>
+            </StaggerInView>
 
+            <StaggerInView index={2}>
             <View style={styles.statsRow}>
               <StatCard
                 icon="car-sport"
@@ -148,7 +156,9 @@ export default function AdminHomeScreen() {
                 value={`${dashboard?.active_personnel ?? 0}/${dashboard?.total_personnel ?? 0}`}
               />
             </View>
+            </StaggerInView>
 
+            <StaggerInView index={3}>
             <View style={styles.statsRow}>
               <StatCard icon="pulse" label="Açık Mesai" value={dashboard?.open_shifts ?? 0} accent={colors.success} />
               <StatCard
@@ -157,8 +167,10 @@ export default function AdminHomeScreen() {
                 value={`₺${(dashboard?.total_revenue ?? 0).toLocaleString("tr-TR")}`}
               />
             </View>
+            </StaggerInView>
 
             {weekly && (weekly.top_profit_driver || weekly.top_shifts_driver) && (
+              <StaggerInView index={4}>
               <View style={styles.limitCard}>
                 <Text style={styles.limitTitle}>Bu Haftanın Yıldızları</Text>
                 {weekly.top_profit_driver && (
@@ -178,8 +190,10 @@ export default function AdminHomeScreen() {
                   </View>
                 )}
               </View>
+              </StaggerInView>
             )}
 
+            <StaggerInView index={5}>
             <View style={styles.limitCard}>
               <Text style={styles.limitTitle}>Kullanım Limitleri</Text>
               <View style={styles.limitRow}>
@@ -195,6 +209,7 @@ export default function AdminHomeScreen() {
                 </Text>
               </View>
             </View>
+            </StaggerInView>
           </>
         )}
       </ScrollView>

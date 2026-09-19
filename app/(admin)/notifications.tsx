@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
+import { StaggerInView } from "../../src/components/ui/StaggerInView";
 import {
   getNotifications,
   markNotificationRead,
@@ -88,7 +89,8 @@ export default function NotificationsScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
+          <StaggerInView index={index}>
           <TouchableOpacity
             style={[styles.card, !item.read && styles.cardUnread]}
             onPress={() => handlePress(item)}
@@ -104,6 +106,7 @@ export default function NotificationsScreen() {
             </View>
             {!item.read && <View style={styles.unreadDot} />}
           </TouchableOpacity>
+          </StaggerInView>
         )}
         ListEmptyComponent={<Text style={styles.empty}>Henüz bildirim bulunmuyor.</Text>}
       />

@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
+import { StaggerInView } from "../../src/components/ui/StaggerInView";
 import { useAuthStore } from "../../src/store/authStore";
 import { getPersonnel, createPersonnel, Personnel } from "../../src/api/fleet";
 import { resetPersonnelPassword } from "../../src/api/auth";
@@ -128,7 +129,8 @@ export default function PersonnelScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
+          <StaggerInView index={index}>
           <TouchableOpacity
             style={styles.card}
             onPress={() =>
@@ -156,6 +158,7 @@ export default function PersonnelScreen() {
               </TouchableOpacity>
             )}
           </TouchableOpacity>
+          </StaggerInView>
         )}
         ListEmptyComponent={<Text style={styles.empty}>Kayıtlı sürücü bulunmuyor.</Text>}
       />

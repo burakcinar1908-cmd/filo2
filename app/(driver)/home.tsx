@@ -4,6 +4,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
+import { StaggerInView } from "../../src/components/ui/StaggerInView";
+import { PressableScale } from "../../src/components/ui/PressableScale";
+import { PulseDot } from "../../src/components/ui/PulseDot";
 import { useAuthStore } from "../../src/store/authStore";
 import { useShiftStore } from "../../src/store/shiftStore";
 import { api } from "../../src/api/client";
@@ -127,10 +130,12 @@ export default function DriverHomeScreen() {
           </View>
         </View>
 
+        <StaggerInView index={0}>
         <View style={styles.statusCard}>
           <View style={styles.statusRow}>
             <Text style={styles.statusLabel}>Mesai Durumu</Text>
             <View style={[styles.badge, { backgroundColor: shiftStatus === "active" ? colors.success : colors.surfaceAlt }]}>
+              {shiftStatus === "active" && <PulseDot size={7} color={colors.text} />}
               <Text style={styles.badgeText}>{shiftStatus === "active" ? "Mesai Aktif" : "Mesai Kapalı"}</Text>
             </View>
           </View>
@@ -151,15 +156,20 @@ export default function DriverHomeScreen() {
             </View>
           )}
         </View>
+        </StaggerInView>
 
         {shiftStatus === "closed" ? (
-          <TouchableOpacity style={styles.startButton} onPress={handleStartPress}>
+          <StaggerInView index={1}>
+          <PressableScale style={styles.startButton} onPress={handleStartPress}>
             <Text style={styles.startButtonText}>MESAİYİ BAŞLAT</Text>
-          </TouchableOpacity>
+          </PressableScale>
+          </StaggerInView>
         ) : (
-          <TouchableOpacity style={styles.endButton} onPress={handleEndPress}>
+          <StaggerInView index={1}>
+          <PressableScale style={styles.endButton} onPress={handleEndPress}>
             <Text style={styles.startButtonText}>MESAİYİ BİTİR</Text>
-          </TouchableOpacity>
+          </PressableScale>
+          </StaggerInView>
         )}
       </ScrollView>
 
@@ -269,7 +279,7 @@ const styles = StyleSheet.create({
   statusRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   statusLabel: { color: colors.textMuted, fontSize: 14 },
   statusValue: { color: colors.text, fontSize: 15, fontWeight: "600" },
-  badge: { paddingHorizontal: spacing(1.5), paddingVertical: spacing(0.75), borderRadius: 999 },
+  badge: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: spacing(1.5), paddingVertical: spacing(0.75), borderRadius: 999 },
   badgeText: { color: colors.text, fontSize: 12, fontWeight: "700" },
   startButton: { backgroundColor: colors.success, borderRadius: 16, paddingVertical: spacing(2.5), alignItems: "center" },
   endButton: { backgroundColor: colors.danger, borderRadius: 16, paddingVertical: spacing(2.5), alignItems: "center" },

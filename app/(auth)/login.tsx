@@ -16,6 +16,8 @@ import { Link } from "expo-router";
 import { useAuthStore } from "../../src/store/authStore";
 import { initSuperAdmin } from "../../src/api/auth";
 import { colors, spacing } from "../../src/theme/colors";
+import { StaggerInView } from "../../src/components/ui/StaggerInView";
+import { PressableScale } from "../../src/components/ui/PressableScale";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -68,14 +70,17 @@ export default function LoginScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.content}>
-          <View style={styles.brand}>
-            <TouchableOpacity onLongPress={handleLogoLongPress} delayLongPress={2000} activeOpacity={0.8}>
-              <Image source={require("../../assets/logo.png")} style={styles.logoImage} resizeMode="contain" />
-            </TouchableOpacity>
-            <Text style={styles.brandName}>Tagsimetre</Text>
-            <Text style={styles.brandSub}>Filo Yönetim Sistemi</Text>
-          </View>
+          <StaggerInView index={0}>
+            <View style={styles.brand}>
+              <TouchableOpacity onLongPress={handleLogoLongPress} delayLongPress={2000} activeOpacity={0.8}>
+                <Image source={require("../../assets/logo.png")} style={styles.logoImage} resizeMode="contain" />
+              </TouchableOpacity>
+              <Text style={styles.brandName}>Tagsimetre</Text>
+              <Text style={styles.brandSub}>Filo Yönetim Sistemi</Text>
+            </View>
+          </StaggerInView>
 
+          <StaggerInView index={1}>
           <View style={styles.form}>
             <Text style={styles.label}>E-posta</Text>
             <TextInput
@@ -101,7 +106,7 @@ export default function LoginScreen() {
 
             {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
 
-            <TouchableOpacity
+            <PressableScale
               style={[styles.button, submitting && styles.buttonDisabled]}
               onPress={handleLogin}
               disabled={submitting}
@@ -111,7 +116,7 @@ export default function LoginScreen() {
               ) : (
                 <Text style={styles.buttonText}>Giriş Yap</Text>
               )}
-            </TouchableOpacity>
+            </PressableScale>
 
             <Link href="/(auth)/forgot-password" asChild>
               <TouchableOpacity style={styles.forgotLink}>
@@ -125,6 +130,7 @@ export default function LoginScreen() {
               </TouchableOpacity>
             </Link>
           </View>
+          </StaggerInView>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

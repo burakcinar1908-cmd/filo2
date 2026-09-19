@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
+import { StaggerInView } from "../../src/components/ui/StaggerInView";
 import { useAuthStore } from "../../src/store/authStore";
 import { getVehicles, createVehicle, Vehicle } from "../../src/api/fleet";
 
@@ -102,7 +103,8 @@ export default function VehiclesScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
+          <StaggerInView index={index}>
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.plate}>{item.plate_number}</Text>
@@ -115,6 +117,7 @@ export default function VehiclesScreen() {
             </Text>
             <Text style={styles.metaDim}>Ort. Yakıt: {item.fuel_consumption_per_100km} L/100km</Text>
           </View>
+          </StaggerInView>
         )}
         ListEmptyComponent={<Text style={styles.empty}>Kayıtlı araç bulunmuyor.</Text>}
       />

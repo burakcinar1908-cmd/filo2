@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
+import { StaggerInView } from "../../src/components/ui/StaggerInView";
 import { useAuthStore } from "../../src/store/authStore";
 import { getAnnouncements, createAnnouncement, Announcement } from "../../src/api/announcements";
 import { getPersonnel, Personnel } from "../../src/api/fleet";
@@ -125,7 +126,8 @@ export default function AnnouncementsScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
+          <StaggerInView index={index}>
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Ionicons name="megaphone-outline" size={16} color={colors.primary} />
@@ -136,6 +138,7 @@ export default function AnnouncementsScreen() {
               {new Date(item.created_at).toLocaleString("tr-TR")}
             </Text>
           </View>
+          </StaggerInView>
         )}
         ListEmptyComponent={<Text style={styles.empty}>Henüz duyuru bulunmuyor.</Text>}
       />

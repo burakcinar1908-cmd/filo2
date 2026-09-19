@@ -14,6 +14,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../../src/theme/colors";
+import { StaggerInView } from "../../src/components/ui/StaggerInView";
+import { PressableScale } from "../../src/components/ui/PressableScale";
 import { getLicensePrices, initPayment, LicensePrices } from "../../src/api/payments";
 
 const PLANS = [
@@ -104,9 +106,9 @@ export default function PlansScreen() {
         {error && !selected && <Text style={styles.error}>{error}</Text>}
 
         <View style={styles.planGrid}>
-          {PLANS.map((plan) => (
-            <TouchableOpacity
-              key={plan.months}
+          {PLANS.map((plan, i) => (
+            <StaggerInView key={plan.months} index={i}>
+            <PressableScale
               style={[styles.planCard, selected?.months === plan.months && styles.planSelected]}
               onPress={() => openCheckout(plan)}
             >
@@ -118,7 +120,8 @@ export default function PlansScreen() {
               <Ionicons name="shield-checkmark" size={24} color={colors.primary} />
               <Text style={styles.planName}>{plan.name}</Text>
               <Text style={styles.planPrice}>{prices ? prices[plan.key] : "..."}</Text>
-            </TouchableOpacity>
+            </PressableScale>
+            </StaggerInView>
           ))}
         </View>
 
